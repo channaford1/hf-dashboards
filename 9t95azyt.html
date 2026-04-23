@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Michael Nham — Interactive Office Dashboard</title>
+<title>Michael Nham — Office Dashboard</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
   :root {
@@ -24,7 +24,12 @@
   .header-left h1 span{color:var(--accent)}
   .header-left .subtitle{font-size:13px;color:var(--text-dim);margin-top:4px}
 
-  /* Date picker section */
+  /* Language toggle */
+  .lang-toggle{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0;align-self:flex-start}
+  .lang-btn{padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;background:transparent;color:var(--text-muted)}
+  .lang-btn.active{background:var(--accent);color:var(--bg)}
+  .lang-btn:hover:not(.active){color:var(--text)}
+
   .date-controls{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
   .date-controls label{font-size:12px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.6px}
   .date-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 12px;border-radius:8px;outline:none;transition:border-color .15s}
@@ -36,14 +41,12 @@
   .date-divider{color:var(--text-muted);font-size:13px}
   .record-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);margin-left:auto}
 
-  /* KPIs */
   .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
-  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
   .kpi .kl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:6px}
-  .kpi .kv{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:600;transition:color .3s}
+  .kpi .kv{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:600}
   .kpi .ks{font-size:11px;color:var(--text-dim);margin-top:4px}
 
-  /* Sort/filter controls */
   .controls{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
   .controls label{font-size:12px;color:var(--text-dim);font-weight:500}
   .sort-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s}
@@ -58,7 +61,6 @@
   .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim)}
   .legend-dot{width:8px;height:8px;border-radius:2px}
 
-  /* Rep cards */
   .rep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin-bottom:32px}
   .rep-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .2s;overflow:hidden}
   .rep-card:hover{border-color:var(--text-muted)}
@@ -83,23 +85,9 @@
   .b1-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
   .b1-bar-fill{height:100%;border-radius:3px}
 
-  /* Monthly B2 mini bars */
-  .b2m{margin-top:10px;background:var(--surface2);border-radius:8px;padding:10px 12px}
-  .b2m .b2ml{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-dim);margin-bottom:12px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-  .month-bars{display:flex;gap:6px;align-items:flex-end;height:48px}
-  .mb-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-  .mb-val{font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600}
-  .mb-bar{width:80%;max-width:40px;border-radius:3px 3px 0 0;min-height:2px}
-  .mb-label{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text-muted)}
-
   .color-green{color:var(--green)}.color-amber{color:var(--amber)}.color-red{color:var(--red)}.color-blue{color:var(--blue)}.color-purple{color:var(--purple)}
-  .bar-green{background:var(--green)}.bar-amber{background:var(--amber)}.bar-red{background:var(--red)}
 
   .footnote{font-size:11px;color:var(--text-muted);margin-top:20px;padding-top:16px;border-top:1px solid var(--border);line-height:1.6}
-
-  /* Loading pulse */
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-  .loading .kv,.loading .mv{animation:pulse 1s ease-in-out}
 </style>
 </head>
 <body>
@@ -109,16 +97,19 @@
     <h1>Michael Nham — <span>Office Dashboard</span></h1>
     <div class="subtitle">HelloFresh Canada D2D · 5 Active Reps · Interactive Date Range</div>
   </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="langEN" onclick="setLang('en')">ENG</button>
+    <button class="lang-btn" id="langFR" onclick="setLang('fr')">FR</button>
+  </div>
 </div>
 
-<!-- Date Range Controls -->
 <div class="date-controls">
-  <label>From</label>
+  <label id="lbl_from">From</label>
   <input type="date" class="date-input" id="startDate" value="2025-01-01">
   <span class="date-divider">→</span>
-  <label>To</label>
+  <label id="lbl_to">To</label>
   <input type="date" class="date-input" id="endDate" value="2026-04-17">
-  <div style="display:flex;gap:6px;flex-wrap:wrap">
+  <div style="display:flex;gap:6px;flex-wrap:wrap" id="presetWrap">
     <button class="preset-btn" data-preset="all">All Time</button>
     <button class="preset-btn" data-preset="2026">2026 YTD</button>
     <button class="preset-btn" data-preset="q1">Q1 2026</button>
@@ -129,250 +120,233 @@
   <div class="record-count" id="recordCount">—</div>
 </div>
 
-<!-- KPIs -->
 <div class="kpi-grid" id="kpis"></div>
 
-<!-- Sort/Filter -->
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> B2 ≥ 55%</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> B2 45–54%</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> B2 &lt; 45%</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> &lt; 10 orders in range</div>
-</div>
-<div class="controls">
-  <label>Sort by:</label>
-  <button class="sort-btn active" data-sort="volume">Volume</button>
-  <button class="sort-btn" data-sort="b2rate">B2 Rate</button>
-  <button class="sort-btn" data-sort="cancel">24h Cancel</button>
-  <button class="sort-btn" data-sort="b1only">B1 Only %</button>
-  <div class="filter-btns">
-    <button class="filter-btn active" data-filter="all" id="filterAll">All</button>
-    <button class="filter-btn" data-filter="active">Active Only</button>
-    <button class="filter-btn" data-filter="low">Low Vol</button>
-  </div>
-</div>
-
-<!-- Rep Cards -->
+<div class="legend" id="legend"></div>
+<div class="controls" id="controls"></div>
 <div class="rep-grid" id="repGrid"></div>
 
-<div class="footnote">
-  <strong>Methodology:</strong> B2 Rate = cohort (sign-ups in selected range tracked to B2 delivery). 24h Cancel = flag_cancelled_24h ÷ total.
-  B1 Delivery = first_delivery_date present ÷ total. B1 Only = genuine no-B2 ÷ genuine. Monthly B2 shows month-by-month cohort within range (last month may be immature).
-  Campaign Avg B2: 54.2%. All stats computed client-side from raw data.
-</div>
+<div class="footnote" id="footnote"></div>
 
 <script>
-// ===========================================
-// EMBEDDED RAW DATA
-// ===========================================
-const RAW = [{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-07","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":20260413},{"r":"Saikumar Nagalla","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260411,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-30","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Saikumar Nagalla","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260408,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-30","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-30","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260405,"b2":20260412},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260412,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260405,"b2":20260412},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260405,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260414,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":true,"b1":20260408,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-02","w":"2026-W14","c":false,"b1":20260412,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-06","w":"2026-W15","c":false,"b1":20260414,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-03","w":"2026-W14","c":false,"b1":20260413,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-05","w":"2026-W15","c":false,"b1":20260411,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-06","w":"2026-W15","c":false,"b1":20260413,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-07","w":"2026-W15","c":false,"b1":20260412,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-09","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-10","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-13","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-13","w":"2026-W16","c":true,"b1":null,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-12","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-14","w":"2026-W16","c":true,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-13","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-13","w":"2026-W16","c":true,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-16","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-16","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Phurtenzing Sherpa","s":"2026-04-16","w":"2026-W16","c":false,"b1":null,"b2":null}];
+const RAW = [{"r":"Michael Nham","s":"2026-03-30","w":"2026-W14","c":false,"b1":null,"b2":null},{"r":"Michael Nham","s":"2026-04-09","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-07","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":20260413},{"r":"Michael Nham","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260404,"b2":20260411},{"r":"Michael Nham","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260404,"b2":null},{"r":"Michael Nham","s":"2026-03-31","w":"2026-W14","c":true,"b1":20260404,"b2":null},{"r":"Michael Nham","s":"2026-03-31","w":"2026-W14","c":true,"b1":20260411,"b2":null},{"r":"Michael Nham","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Michael Nham","s":"2026-03-28","w":"2026-W13","c":true,"b1":20260405,"b2":20260411},{"r":"Saikumar Nagalla","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260411,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-30","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Saikumar Nagalla","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260408,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-30","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-30","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260405,"b2":20260412},{"r":"Shadi Kamaei","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":null},{"r":"Michael Nham","s":"2026-03-31","w":"2026-W14","c":false,"b1":20260406,"b2":20260413},{"r":"Michael Nham","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260407,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260412,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260405,"b2":20260412},{"r":"Michael Nham","s":"2026-04-01","w":"2026-W14","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260405,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":false,"b1":20260414,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-01","w":"2026-W14","c":true,"b1":20260408,"b2":null},{"r":"Michael Nham","s":"2026-04-02","w":"2026-W14","c":false,"b1":20260413,"b2":null},{"r":"Michael Nham","s":"2026-04-02","w":"2026-W14","c":false,"b1":20260413,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-02","w":"2026-W14","c":false,"b1":20260412,"b2":null},{"r":"Michael Nham","s":"2026-04-02","w":"2026-W14","c":false,"b1":20260412,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-06","w":"2026-W15","c":false,"b1":20260414,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-03","w":"2026-W14","c":false,"b1":20260413,"b2":null},{"r":"Phurtenzing Sherpa","s":"2026-04-08","w":"2026-W15","c":false,"b1":20260414,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-05","w":"2026-W15","c":false,"b1":20260411,"b2":null},{"r":"Michael Nham","s":"2026-04-08","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-06","w":"2026-W15","c":false,"b1":20260413,"b2":null},{"r":"Michael Nham","s":"2026-04-06","w":"2026-W15","c":false,"b1":20260411,"b2":null},{"r":"Michael Nham","s":"2026-04-06","w":"2026-W15","c":false,"b1":20260414,"b2":null},{"r":"Michael Nham","s":"2026-04-07","w":"2026-W15","c":false,"b1":20260413,"b2":null},{"r":"Michael Nham","s":"2026-04-07","w":"2026-W15","c":false,"b1":20260411,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-07","w":"2026-W15","c":false,"b1":20260412,"b2":null},{"r":"Michael Nham","s":"2026-04-08","w":"2026-W15","c":false,"b1":20260413,"b2":null},{"r":"Michael Nham","s":"2026-04-08","w":"2026-W15","c":false,"b1":20260414,"b2":null},{"r":"Michael Nham","s":"2026-04-09","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-09","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-10","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-13","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-13","w":"2026-W16","c":true,"b1":null,"b2":null},{"r":"Saikumar Nagalla","s":"2026-04-12","w":"2026-W15","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-14","w":"2026-W16","c":true,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-13","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-13","w":"2026-W16","c":true,"b1":null,"b2":null},{"r":"Michael Nham","s":"2026-04-15","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-16","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Shadi Kamaei","s":"2026-04-16","w":"2026-W16","c":false,"b1":null,"b2":null},{"r":"Phurtenzing Sherpa","s":"2026-04-16","w":"2026-W16","c":false,"b1":null,"b2":null}];
 const REPS = [{"name":"Dhruv Kumar Dhingra","created":"9/11/2023"},{"name":"Michael Nham","created":"8/10/2017"},{"name":"Phurtenzing Sherpa","created":"10/9/2025"},{"name":"Saikumar Nagalla","created":"1/25/2026"},{"name":"Shadi Kamaei","created":"12/3/2024"}];
 
 // ===========================================
-// STATE
+// TRANSLATIONS
 // ===========================================
+const T = {
+  en: {
+    office_dashboard: 'Office Dashboard',
+    active_reps: 'Active Reps',
+    interactive_range: 'Interactive Date Range',
+    from: 'From', to: 'To',
+    all_time: 'All Time', ytd: '2026 YTD', q1: 'Q1 2026',
+    feb_apr: 'Feb 1 – Apr 4', last_90: 'Last 90 Days', last_30: 'Last 30 Days',
+    orders: 'orders',
+    total_orders: 'Total Orders', genuine_b1: 'genuine B1',
+    cancel_rate: '24h Cancel Rate', campaign_avg: 'Campaign Avg',
+    b1_del_rate: 'B1 Delivery Rate',
+    b2_rate: 'B2 Rate',
+    b1_only: 'B1 Only', lost: 'lost',
+    b2_conversions: 'B2 Conversions', of: 'Of',
+    sort_by: 'Sort by:', volume: 'Volume', cancel: '24h Cancel',
+    all: 'All', active_only: 'Active Only', low_vol: 'Low Vol',
+    avg_b1_wk: 'Avg B1 / Week', total: 'total',
+    b1_del: 'B1 Delivery Rate', delivered: 'delivered',
+    b1_only_sales: 'B1 Only Sales', no_box2: 'with no Box 2',
+    since: 'Since', wks: 'wks', orders_lc: 'orders',
+    in_wks: 'in range',
+    strong: 'STRONG', monitor: 'MONITOR', at_risk: 'AT RISK', low_volume: 'LOW VOL', no_data: 'NO DATA',
+    no_orders_range: 'No orders in range',
+    legend_b2_55: 'B2 ≥ 55%', legend_b2_45: 'B2 45–54%', legend_b2_low: 'B2 < 45%', legend_new: '< 10 orders in range',
+    footnote: '<strong>Methodology:</strong> B2 Rate = cohort (sign-ups in selected range tracked to B2 delivery). 24h Cancel = flag_cancelled_24h ÷ total. B1 Delivery = first_delivery_date present ÷ total. B1 Only = genuine no-B2 ÷ genuine. Campaign Avg B2: 54.2%. All stats computed client-side from raw data.',
+  },
+  fr: {
+    office_dashboard: 'Tableau de bord',
+    active_reps: 'Représentants actifs',
+    interactive_range: 'Plage de dates interactive',
+    from: 'Du', to: 'Au',
+    all_time: 'Tout', ytd: '2026 cumul', q1: 'T1 2026',
+    feb_apr: '1 fév – 4 avr', last_90: '90 derniers jours', last_30: '30 derniers jours',
+    orders: 'commandes',
+    total_orders: 'Total commandes', genuine_b1: 'clients B1 livrés',
+    cancel_rate: "Taux d'annulation 24h", campaign_avg: 'Moy. campagne',
+    b1_del_rate: 'Taux de livraison B1',
+    b2_rate: 'Taux B2',
+    b1_only: 'B1 seulement', lost: 'perdus',
+    b2_conversions: 'Conversions B2', of: 'Sur',
+    sort_by: 'Trier par :', volume: 'Volume', cancel: 'Annulation 24h',
+    all: 'Tous', active_only: 'Actifs', low_vol: 'Faible vol.',
+    avg_b1_wk: 'Moy. B1 / sem.', total: 'total',
+    b1_del: 'Taux livraison B1', delivered: 'livrés',
+    b1_only_sales: 'Ventes B1 seulement', no_box2: 'sans Box 2',
+    since: 'Depuis', wks: 'sem.', orders_lc: 'commandes',
+    in_wks: 'dans la période',
+    strong: 'FORT', monitor: 'SURVEILLER', at_risk: 'À RISQUE', low_volume: 'FAIBLE VOL.', no_data: 'AUCUNE DONNÉE',
+    no_orders_range: 'Aucune commande dans la période',
+    legend_b2_55: 'B2 ≥ 55%', legend_b2_45: 'B2 45–54%', legend_b2_low: 'B2 < 45%', legend_new: '< 10 commandes',
+    footnote: '<strong>Méthodologie :</strong> Taux B2 = cohorte (inscriptions dans la période suivies jusqu\'à la livraison B2). Annulation 24h = flag_cancelled_24h ÷ total. Livraison B1 = first_delivery_date présente ÷ total. B1 seulement = clients livrés sans B2 ÷ total clients livrés. Taux B2 moy. campagne : 54,2 %. Tous les calculs sont effectués côté client à partir des données brutes.',
+  }
+};
+
+let lang = 'en';
 let currentSort = 'volume';
 let currentFilter = 'all';
 
-// ===========================================
-// HELPERS
-// ===========================================
-function rc(r, t) {
-  if (t === 'b2') return r >= 55 ? 'green' : r >= 45 ? 'amber' : 'red';
-  if (t === 'cancel') return r <= 18 ? 'green' : r <= 25 ? 'amber' : 'red';
-  if (t === 'b1only') return r <= 40 ? 'green' : r <= 50 ? 'amber' : 'red';
+function t(key) { return T[lang][key] || T['en'][key] || key; }
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('langEN').classList.toggle('active', l === 'en');
+  document.getElementById('langFR').classList.toggle('active', l === 'fr');
+  document.querySelector('.header-left h1').innerHTML = `Michael Nham — <span>${t('office_dashboard')}</span>`;
+  document.querySelector('.subtitle').textContent = `HelloFresh Canada D2D · 5 ${t('active_reps')} · ${t('interactive_range')}`;
+  document.getElementById('lbl_from').textContent = t('from');
+  document.getElementById('lbl_to').textContent = t('to');
+  // Update preset buttons
+  const presetLabels = { all: t('all_time'), '2026': t('ytd'), q1: t('q1'), 'feb-apr': t('feb_apr'), '90d': t('last_90'), '30d': t('last_30') };
+  document.querySelectorAll('.preset-btn').forEach(b => { if (presetLabels[b.dataset.preset]) b.textContent = presetLabels[b.dataset.preset]; });
+  render();
+}
+
+function rc(r, tt) {
+  if (tt === 'b2') return r >= 55 ? 'green' : r >= 45 ? 'amber' : 'red';
+  if (tt === 'cancel') return r <= 18 ? 'green' : r <= 25 ? 'amber' : 'red';
+  if (tt === 'b1only') return r <= 40 ? 'green' : r <= 50 ? 'amber' : 'red';
   return 'amber';
 }
 
-function parseYMD(v) {
-  if (!v) return null;
-  const s = String(v);
-  return new Date(s.slice(0,4) + '-' + s.slice(4,6) + '-' + s.slice(6,8));
-}
-
-// ===========================================
-// COMPUTE STATS FOR A DATE RANGE
-// ===========================================
 function computeStats(startStr, endStr) {
   const start = new Date(startStr);
   const end = new Date(endStr);
   end.setHours(23,59,59);
-
-  // Filter records to date range
-  const filtered = RAW.filter(r => {
-    if (!r.s) return false;
-    const d = new Date(r.s);
-    return d >= start && d <= end;
-  });
-
-  document.getElementById('recordCount').textContent = filtered.length.toLocaleString() + ' orders';
-
-  // Office totals
+  const filtered = RAW.filter(r => { if (!r.s) return false; const d = new Date(r.s); return d >= start && d <= end; });
+  document.getElementById('recordCount').textContent = filtered.length.toLocaleString() + ' ' + t('orders');
   const total = filtered.length;
   const cancels = filtered.filter(r => r.c).length;
   const b1Del = filtered.filter(r => r.b1 !== null).length;
   const genuine = filtered.filter(r => r.b1 !== null);
   const b2Del = genuine.filter(r => r.b2 !== null).length;
-
   const office = {
-    total,
-    cancelRate: total ? +(cancels / total * 100).toFixed(1) : 0,
-    b1DelRate: total ? +(b1Del / total * 100).toFixed(1) : 0,
-    b2Rate: genuine.length ? +(b2Del / genuine.length * 100).toFixed(1) : 0,
-    b1OnlyPct: genuine.length ? +((genuine.length - b2Del) / genuine.length * 100).toFixed(1) : 0,
-    genuine: genuine.length,
-    b2Count: b2Del,
+    total, cancelRate: total ? +(cancels/total*100).toFixed(1) : 0,
+    b1DelRate: total ? +(b1Del/total*100).toFixed(1) : 0,
+    b2Rate: genuine.length ? +(b2Del/genuine.length*100).toFixed(1) : 0,
+    b1OnlyPct: genuine.length ? +((genuine.length-b2Del)/genuine.length*100).toFixed(1) : 0,
+    genuine: genuine.length, b2Count: b2Del,
   };
-
-  // Per-rep stats
   const repMap = {};
   REPS.forEach(r => { repMap[r.name] = { ...r, records: [] }; });
   filtered.forEach(r => { if (repMap[r.r]) repMap[r.r].records.push(r); });
-
   const repStats = REPS.map(rep => {
     const recs = repMap[rep.name].records;
-    const t = recs.length;
-    if (t === 0) return { name: rep.name, created: rep.created, total: 0, weeks: 0, avgB1: 0, cancel24h: 0, cancelRate: 0, b1Del: 0, b1DelRate: 0, genuine: 0, b2: 0, b2Rate: 0, b1Only: 0, monthly: [] };
-
-    // Weekly counts
+    const tt = recs.length;
+    if (tt === 0) return { name:rep.name, created:rep.created, total:0, weeks:0, avgB1:0, cancel24h:0, cancelRate:0, b1Del:0, b1DelRate:0, genuine:0, b2:0, b2Rate:0, b1Only:0 };
     const weekMap = {};
-    recs.forEach(r => { weekMap[r.w] = (weekMap[r.w] || 0) + 1; });
+    recs.forEach(r => { weekMap[r.w] = (weekMap[r.w]||0)+1; });
     const weeks = Object.keys(weekMap).length;
-    const avgB1 = +(t / weeks).toFixed(1);
-
+    const avgB1 = +(tt/weeks).toFixed(1);
     const c24 = recs.filter(r => r.c).length;
     const b1d = recs.filter(r => r.b1 !== null).length;
     const gen = recs.filter(r => r.b1 !== null);
     const b2c = gen.filter(r => r.b2 !== null).length;
-
-    // Monthly B2 cohort - group by signup month, exclude last month if too recent
-    const monthGroups = {};
-    recs.forEach(r => {
-      if (!r.s) return;
-      const m = r.s.slice(0, 7); // YYYY-MM
-      if (!monthGroups[m]) monthGroups[m] = [];
-      monthGroups[m].push(r);
-    });
-
-    const months = Object.keys(monthGroups).sort();
-    // Exclude last month if it's April (immature)
-    const displayMonths = months.filter(m => m < '2026-04');
-    const mNames = {'-01':'Jan','-02':'Feb','-03':'Mar','-04':'Apr','-05':'May','-06':'Jun','-07':'Jul','-08':'Aug','-09':'Sep','-10':'Oct','-11':'Nov','-12':'Dec'};
-
-    const monthly = displayMonths.map(m => {
-      const grp = monthGroups[m];
-      const valid = grp.filter(r => !r.c);
-      const b1c = valid.filter(r => r.b1 !== null).length;
-      const b2c = valid.filter(r => r.b2 !== null).length;
-      const label = mNames[m.slice(4)] || m.slice(5);
-      return { m: label, b1: b1c, b2: b2c, r: b1c ? +(b2c / b1c * 100).toFixed(1) : 0 };
-    }).filter(m => m.b1 > 0);
-
-    // Limit to last 6 months for display
-    const monthlyDisplay = monthly.slice(-6);
-
-    return {
-      name: rep.name,
-      created: rep.created,
-      total: t,
-      weeks,
-      avgB1,
-      cancel24h: c24,
-      cancelRate: t ? +(c24 / t * 100).toFixed(1) : 0,
-      b1Del: b1d,
-      b1DelRate: t ? +(b1d / t * 100).toFixed(1) : 0,
-      genuine: gen.length,
-      b2: b2c,
-      b2Rate: gen.length ? +(b2c / gen.length * 100).toFixed(1) : 0,
-      b1Only: gen.length ? +((gen.length - b2c) / gen.length * 100).toFixed(1) : 0,
-      monthly: monthlyDisplay,
-    };
+    return { name:rep.name, created:rep.created, total:tt, weeks, avgB1, cancel24h:c24,
+      cancelRate: tt ? +(c24/tt*100).toFixed(1) : 0, b1Del:b1d,
+      b1DelRate: tt ? +(b1d/tt*100).toFixed(1) : 0, genuine:gen.length, b2:b2c,
+      b2Rate: gen.length ? +(b2c/gen.length*100).toFixed(1) : 0,
+      b1Only: gen.length ? +((gen.length-b2c)/gen.length*100).toFixed(1) : 0 };
   });
-
   return { office, reps: repStats };
 }
 
-// ===========================================
-// RENDER
-// ===========================================
 function render() {
   const s = document.getElementById('startDate').value;
   const e = document.getElementById('endDate').value;
   if (!s || !e) return;
-
   const { office: o, reps } = computeStats(s, e);
 
   // KPIs
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi"><div class="kl">Total Orders</div><div class="kv" style="color:var(--text)">${o.total.toLocaleString()}</div><div class="ks">${o.genuine.toLocaleString()} genuine B1</div></div>
-    <div class="kpi"><div class="kl">24h Cancel Rate</div><div class="kv color-${rc(o.cancelRate,'cancel')}">${o.cancelRate}%</div><div class="ks">Campaign Avg: 20.1%</div></div>
-    <div class="kpi"><div class="kl">B1 Delivery Rate</div><div class="kv color-blue">${o.b1DelRate}%</div><div class="ks">Campaign Avg: 79.8%</div></div>
-    <div class="kpi"><div class="kl">B2 Rate</div><div class="kv color-${rc(o.b2Rate,'b2')}">${o.b2Rate}%</div><div class="ks">Campaign Avg: 54.2%</div></div>
-    <div class="kpi"><div class="kl">B1 Only</div><div class="kv color-${rc(o.b1OnlyPct,'b1only')}">${o.b1OnlyPct}%</div><div class="ks">Campaign Avg: 45.8%</div></div>
-    <div class="kpi"><div class="kl">B2 Conversions</div><div class="kv color-purple">${o.b2Count.toLocaleString()}</div><div class="ks">Of ${o.genuine.toLocaleString()}</div></div>`;
+    <div class="kpi"><div class="kl">${t('total_orders')}</div><div class="kv" style="color:var(--text)">${o.total.toLocaleString()}</div><div class="ks">${o.genuine.toLocaleString()} ${t('genuine_b1')}</div></div>
+    <div class="kpi"><div class="kl">${t('cancel_rate')}</div><div class="kv color-${rc(o.cancelRate,'cancel')}">${o.cancelRate}%</div><div class="ks">${t('campaign_avg')}: 20.1%</div></div>
+    <div class="kpi"><div class="kl">${t('b1_del_rate')}</div><div class="kv color-blue">${o.b1DelRate}%</div><div class="ks">${t('campaign_avg')}: 79.8%</div></div>
+    <div class="kpi"><div class="kl">${t('b2_rate')}</div><div class="kv color-${rc(o.b2Rate,'b2')}">${o.b2Rate}%</div><div class="ks">${t('campaign_avg')}: 54.2%</div></div>
+    <div class="kpi"><div class="kl">${t('b1_only')}</div><div class="kv color-${rc(o.b1OnlyPct,'b1only')}">${o.b1OnlyPct}%</div><div class="ks">${(o.genuine-o.b2Count).toLocaleString()} ${t('lost')}</div></div>
+    <div class="kpi"><div class="kl">${t('b2_conversions')}</div><div class="kv color-purple">${o.b2Count.toLocaleString()}</div><div class="ks">${t('of')} ${o.genuine.toLocaleString()}</div></div>`;
 
-  // Filter
+  // Legend
+  document.getElementById('legend').innerHTML = `
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> ${t('legend_b2_55')}</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> ${t('legend_b2_45')}</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> ${t('legend_b2_low')}</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> ${t('legend_new')}</div>`;
+
+  // Controls
+  const activeCount = reps.filter(r => r.total > 0).length;
+  document.getElementById('controls').innerHTML = `
+    <label>${t('sort_by')}</label>
+    <button class="sort-btn ${currentSort==='volume'?'active':''}" data-sort="volume">${t('volume')}</button>
+    <button class="sort-btn ${currentSort==='b2rate'?'active':''}" data-sort="b2rate">${t('b2_rate')}</button>
+    <button class="sort-btn ${currentSort==='cancel'?'active':''}" data-sort="cancel">${t('cancel')}</button>
+    <button class="sort-btn ${currentSort==='b1only'?'active':''}" data-sort="b1only">${t('b1_only')}</button>
+    <div class="filter-btns">
+      <button class="filter-btn ${currentFilter==='all'?'active':''}" data-filter="all">${t('all')} (${activeCount})</button>
+      <button class="filter-btn ${currentFilter==='active'?'active':''}" data-filter="active">${t('active_only')}</button>
+      <button class="filter-btn ${currentFilter==='low'?'active':''}" data-filter="low">${t('low_vol')}</button>
+    </div>`;
+
+  // Re-bind sort/filter
+  document.querySelectorAll('.sort-btn').forEach(b => b.addEventListener('click', () => { currentSort = b.dataset.sort; render(); }));
+  document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => { currentFilter = b.dataset.filter; render(); }));
+
+  // Filter & sort reps
   let filtered = [...reps];
   if (currentFilter === 'active') filtered = filtered.filter(r => r.total >= 10);
   if (currentFilter === 'low') filtered = filtered.filter(r => r.total > 0 && r.total < 10);
-  document.getElementById('filterAll').textContent = `All (${reps.filter(r=>r.total>0).length})`;
-
-  // Sort
-  if (currentSort === 'volume') filtered.sort((a, b) => b.total - a.total);
-  if (currentSort === 'b2rate') filtered.sort((a, b) => b.b2Rate - a.b2Rate);
-  if (currentSort === 'cancel') filtered.sort((a, b) => b.cancelRate - a.cancelRate);
-  if (currentSort === 'b1only') filtered.sort((a, b) => b.b1Only - a.b1Only);
-
-  // Remove zero-order reps unless showing all
+  if (currentSort === 'volume') filtered.sort((a,b) => b.total - a.total);
+  if (currentSort === 'b2rate') filtered.sort((a,b) => b.b2Rate - a.b2Rate);
+  if (currentSort === 'cancel') filtered.sort((a,b) => b.cancelRate - a.cancelRate);
+  if (currentSort === 'b1only') filtered.sort((a,b) => b.b1Only - a.b1Only);
   if (currentFilter !== 'all') filtered = filtered.filter(r => r.total > 0);
 
   // Cards
   document.getElementById('repGrid').innerHTML = filtered.map(r => {
-    if (r.total === 0) return `<div class="rep-card no-data"><div class="rep-header"><div><div class="rep-name">${r.name}</div><div class="rep-meta">Since ${r.created} · No orders in range</div></div><span class="rep-badge badge-muted">NO DATA</span></div></div>`;
-
+    if (r.total === 0) return `<div class="rep-card no-data"><div class="rep-header"><div><div class="rep-name">${r.name}</div><div class="rep-meta">${t('since')} ${r.created} · ${t('no_orders_range')}</div></div><span class="rep-badge badge-muted">${t('no_data')}</span></div></div>`;
     const isLow = r.total < 10;
     const isFlagged = !isLow && r.b2Rate < 45;
     const bc = isLow ? 'badge-blue' : r.b2Rate >= 55 ? 'badge-green' : r.b2Rate >= 45 ? 'badge-amber' : 'badge-red';
-    const bt = isLow ? 'LOW VOL' : r.b2Rate >= 55 ? 'STRONG' : r.b2Rate >= 45 ? 'MONITOR' : 'AT RISK';
+    const bt = isLow ? t('low_volume') : r.b2Rate >= 55 ? t('strong') : r.b2Rate >= 45 ? t('monitor') : t('at_risk');
     const cc = isFlagged ? 'flagged' : isLow ? 'new-rep' : '';
-
-    let mh = '';
-
     return `<div class="rep-card ${cc}">
-      <div class="rep-header"><div><div class="rep-name">${r.name}</div><div class="rep-meta">Since ${r.created} · ${r.weeks} wks · ${r.total} orders</div></div><span class="rep-badge ${bc}">${bt}</span></div>
+      <div class="rep-header"><div><div class="rep-name">${r.name}</div><div class="rep-meta">${t('since')} ${r.created} · ${r.weeks} ${t('wks')} · ${r.total} ${t('orders_lc')}</div></div><span class="rep-badge ${bc}">${bt}</span></div>
       <div class="metrics-grid">
-        <div class="metric"><div class="ml">Avg B1 / Week</div><div class="mv" style="color:var(--text)">${r.avgB1}</div><div class="md">${r.total} total</div></div>
-        <div class="metric"><div class="ml">24h Cancel Rate</div><div class="mv color-${rc(r.cancelRate,'cancel')}">${r.cancelRate}%</div><div class="md">${r.cancel24h} of ${r.total}</div></div>
-        <div class="metric"><div class="ml">B1 Delivery Rate</div><div class="mv color-blue">${r.b1DelRate}%</div><div class="md">${r.b1Del} delivered</div></div>
-        <div class="metric"><div class="ml">B2 Rate</div><div class="mv color-${rc(r.b2Rate,'b2')}">${r.b2Rate}%</div><div class="md">${r.b2} of ${r.genuine}</div></div>
-        <div class="metric fw"><div class="ml">B1 Only Sales</div><div style="display:flex;align-items:center;gap:12px"><div class="mv color-${rc(r.b1Only,'b1only')}">${r.b1Only}%</div><div class="b1-bar-track"><div class="b1-bar-fill" style="width:${r.b1Only}%;background:var(--${rc(r.b1Only,'b1only')})"></div></div></div><div class="md">${r.genuine - r.b2} with no Box 2</div></div>
+        <div class="metric"><div class="ml">${t('avg_b1_wk')}</div><div class="mv" style="color:var(--text)">${r.avgB1}</div><div class="md">${r.total} ${t('total')}</div></div>
+        <div class="metric"><div class="ml">${t('cancel_rate')}</div><div class="mv color-${rc(r.cancelRate,'cancel')}">${r.cancelRate}%</div><div class="md">${r.cancel24h} ${t('of').toLowerCase()} ${r.total}</div></div>
+        <div class="metric"><div class="ml">${t('b1_del')}</div><div class="mv color-blue">${r.b1DelRate}%</div><div class="md">${r.b1Del} ${t('delivered')}</div></div>
+        <div class="metric"><div class="ml">${t('b2_rate')}</div><div class="mv color-${rc(r.b2Rate,'b2')}">${r.b2Rate}%</div><div class="md">${r.b2} ${t('of').toLowerCase()} ${r.genuine}</div></div>
+        <div class="metric fw"><div class="ml">${t('b1_only_sales')}</div><div style="display:flex;align-items:center;gap:12px"><div class="mv color-${rc(r.b1Only,'b1only')}">${r.b1Only}%</div><div class="b1-bar-track"><div class="b1-bar-fill" style="width:${r.b1Only}%;background:var(--${rc(r.b1Only,'b1only')})"></div></div></div><div class="md">${r.genuine-r.b2} ${t('no_box2')}</div></div>
       </div>
-      </div>`;
+    </div>`;
   }).join('');
+
+  // Footnote
+  document.getElementById('footnote').innerHTML = t('footnote');
 }
 
-// ===========================================
-// EVENT HANDLERS
-// ===========================================
+// Date handlers
 document.getElementById('startDate').addEventListener('change', () => { clearPresets(); render(); });
 document.getElementById('endDate').addEventListener('change', () => { clearPresets(); render(); });
-
 function clearPresets() { document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active')); }
 
-// Presets
 const presets = {
-  'all': ['2025-01-01', '2026-04-17'],
-  '2026': ['2026-01-01', '2026-04-17'],
-  'q1': ['2026-01-01', '2026-03-31'],
-  'feb-apr': ['2026-02-01', '2026-04-04'],
-  '90d': [new Date(Date.now() - 90*86400000).toISOString().slice(0,10), '2026-04-17'],
-  '30d': [new Date(Date.now() - 30*86400000).toISOString().slice(0,10), '2026-04-17'],
+  'all': ['2025-01-01', '2026-04-17'], '2026': ['2026-01-01', '2026-04-17'],
+  'q1': ['2026-01-01', '2026-03-31'], 'feb-apr': ['2026-02-01', '2026-04-04'],
+  '90d': [new Date(Date.now()-90*86400000).toISOString().slice(0,10), '2026-04-17'],
+  '30d': [new Date(Date.now()-30*86400000).toISOString().slice(0,10), '2026-04-17'],
 };
-
 document.querySelectorAll('.preset-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    clearPresets();
-    btn.classList.add('active');
+    clearPresets(); btn.classList.add('active');
     const p = presets[btn.dataset.preset];
     document.getElementById('startDate').value = p[0];
     document.getElementById('endDate').value = p[1];
@@ -380,25 +354,7 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
   });
 });
 
-// Sort buttons
-document.querySelectorAll('.sort-btn').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.sort-btn').forEach(x => x.classList.remove('active'));
-  b.classList.add('active');
-  currentSort = b.dataset.sort;
-  render();
-}));
-
-// Filter buttons
-document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
-  b.classList.add('active');
-  currentFilter = b.dataset.filter;
-  render();
-}));
-
-// ===========================================
-// INIT — default to All Time
-// ===========================================
+// Init
 document.querySelector('[data-preset="all"]').classList.add('active');
 render();
 </script>
