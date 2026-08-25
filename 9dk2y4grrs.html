@@ -98,12 +98,10 @@
   <label id="lbl_to">To</label>
   <input type="date" class="date-input" id="endDate" value="2026-08-23">
   <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <button class="preset-btn" data-preset="confirmed">Confirmed B2</button>
+    <button class="preset-btn" data-preset="lastweek">Last Week</button>
+    <button class="preset-btn" data-preset="lastmonth">Last Month</button>
     <button class="preset-btn" data-preset="all">All Time</button>
-    <button class="preset-btn" data-preset="2026">2026 YTD</button>
-    <button class="preset-btn" data-preset="apr">Q1 2026</button>
-    <button class="preset-btn" data-preset="launch-apr">Feb 1 – Apr 4</button>
-    <button class="preset-btn" data-preset="90d">Last 90 Days</button>
-    <button class="preset-btn" data-preset="30d">Last 30 Days</button>
   </div>
   <div class="record-count" id="recordCount">—</div>
 </div>
@@ -175,7 +173,8 @@ function setLang(l){
   document.getElementById('lbl_to').textContent=t('to');
   const pl={all:t('all_time'),'2026':t('ytd'),apr:t('apr'),'feb-apr':t('feb_apr'),'90d':t('last_90'),'30d':t('last_30')};
   document.querySelectorAll('.preset-btn').forEach(b=>{if(pl[b.dataset.preset])b.textContent=pl[b.dataset.preset]});
-  render();
+  document.getElementById('startDate').value=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+render();
 }
 
 function computeAll(s,e){
@@ -194,7 +193,7 @@ function computeAll(s,e){
   filtered.forEach(r=>{if(im[r.i])im[r.i].recs.push(r)});
   const iclStats=ICL_NAMES.map(n=>{
     const rr=im[n].recs,tt=rr.length,c=rr.filter(r=>r.c).length,b1=rr.filter(r=>r.b1!==null).length;
-    const g=rr.filter(r=>r.b1!==null),b2=g.filter(r=>r.b2!==null).length;
+    const g=rr.filter(r=>r.b1!==null),b2=g.filter(r=>b2Valid(r)).length;
     return{name:n,reps:im[n].rc,total:tt,cancelRate:tt?+(c/tt*100).toFixed(1):0,b1DelRate:tt?+(b1/tt*100).toFixed(1):0,
       b2Rate:g.length?+(b2/g.length*100).toFixed(1):0,b1OnlyPct:g.length?+((g.length-b2)/g.length*100).toFixed(1):0,genuine:g.length,b2Count:b2}});
 
@@ -206,11 +205,20 @@ function computeAll(s,e){
     if(!tt)return{...rep,total:0,weeks:0,avgB1:0,cancel24h:0,cancelRate:0,b1Del:0,b1DelRate:0,genuine:0,b2:0,b2Rate:0,b1Only:0};
     const wm={};rr.forEach(r=>{wm[r.w]=(wm[r.w]||0)+1});const wk=Object.keys(wm).length;
     const c=rr.filter(r=>r.c).length,b1=rr.filter(r=>r.b1!==null).length;
-    const g=rr.filter(r=>r.b1!==null),b2=g.filter(r=>r.b2!==null).length;
+    const g=rr.filter(r=>r.b1!==null),b2=g.filter(r=>b2Valid(r)).length;
     return{...rep,total:tt,weeks:wk,avgB1:+(tt/wk).toFixed(1),cancel24h:c,cancelRate:tt?+(c/tt*100).toFixed(1):0,
       b1Del:b1,b1DelRate:tt?+(b1/tt*100).toFixed(1):0,genuine:g.length,b2:b2,
       b2Rate:g.length?+(b2/g.length*100).toFixed(1):0,b1Only:g.length?+((g.length-b2)/g.length*100).toFixed(1):0}});
   return{campaign,iclStats,repStats};
+}
+
+
+function b2Valid(r){
+  if(r.b2===null||!r.s)return false;
+  const s=new Date(r.s);
+  const b2s=String(r.b2);
+  const b2d=new Date(b2s.slice(0,4)+'-'+b2s.slice(4,6)+'-'+b2s.slice(6,8));
+  return(b2d-s)/(86400000)<=84;
 }
 
 function render(){
@@ -296,9 +304,12 @@ window.sortTbl=sortTbl;window.togOff=togOff;window.selectAll=selectAll;window.se
 document.getElementById('startDate').addEventListener('change',()=>{clearP();render()});
 document.getElementById('endDate').addEventListener('change',()=>{clearP();render()});
 function clearP(){document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'))}
-const presets={'all':['2026-03-28','2026-08-23'],'2026':['2026-03-28','2026-08-23'],'apr':['2026-04-01','2026-04-30'],
-  'launch-apr':['2026-03-28','2026-04-30'],'90d':[new Date(Date.now()-90*864e5).toISOString().slice(0,10),'2026-08-23'],
-  '30d':[new Date(Date.now()-30*864e5).toISOString().slice(0,10),'2026-08-23']};
+const presets={
+    'confirmed':[new Date(Date.now()-135*864e5).toISOString().slice(0,10), new Date(Date.now()-45*864e5).toISOString().slice(0,10)],
+    'lastweek':[(()=>{const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7-7);return d.toISOString().slice(0,10)})(),(()=>{const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7-1);return d.toISOString().slice(0,10)})()],
+    'lastmonth':[(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth()-1,1).toISOString().slice(0,10)})(),(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),0).toISOString().slice(0,10)})()],
+    'all':['2026-03-28','2026-08-23']
+  };
 document.querySelectorAll('.preset-btn').forEach(btn=>{btn.addEventListener('click',()=>{
   clearP();btn.classList.add('active');const p=presets[btn.dataset.preset];
   document.getElementById('startDate').value=p[0];document.getElementById('endDate').value=p[1];render()})});
