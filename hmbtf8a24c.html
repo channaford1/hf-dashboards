@@ -154,12 +154,10 @@
   <label id="lbl_to">To</label>
   <input type="date" class="date-input" id="endDate" value="2026-08-23">
   <div style="display:flex;gap:6px;flex-wrap:wrap" id="presetWrap">
+    <button class="preset-btn" data-preset="confirmed">Confirmed B2</button>
+    <button class="preset-btn" data-preset="lastweek">Last Week</button>
+    <button class="preset-btn" data-preset="lastmonth">Last Month</button>
     <button class="preset-btn" data-preset="all">All Time</button>
-    <button class="preset-btn" data-preset="2026">2026 YTD</button>
-    <button class="preset-btn" data-preset="q1">Q1 2026</button>
-    <button class="preset-btn" data-preset="feb-apr">Feb 1 – Apr 4</button>
-    <button class="preset-btn" data-preset="90d">Last 90 Days</button>
-    <button class="preset-btn" data-preset="30d">Last 30 Days</button>
   </div>
   <div class="record-count" id="recordCount">—</div>
 </div>
@@ -475,17 +473,16 @@ document.getElementById('startDate').addEventListener('change',()=>{clearPresets
 document.getElementById('endDate').addEventListener('change',()=>{clearPresets();render()});
 function clearPresets(){document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'))}
 const presets={
-    'confirmed':[new Date(Date.now()-135*864e5).toISOString().slice(0,10), new Date(Date.now()-45*864e5).toISOString().slice(0,10)],
+    'confirmed':[new Date(Date.now()-135*864e5).toISOString().slice(0,10),new Date(Date.now()-45*864e5).toISOString().slice(0,10)],
     'lastweek':[(()=>{const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7-7);return d.toISOString().slice(0,10)})(),(()=>{const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7-1);return d.toISOString().slice(0,10)})()],
     'lastmonth':[(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth()-1,1).toISOString().slice(0,10)})(),(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),0).toISOString().slice(0,10)})()],
-    'all':['2025-01-01','2026-08-23']
-  };
+    'all':['2025-01-01','2026-08-23']};
 document.querySelectorAll('.preset-btn').forEach(btn=>{btn.addEventListener('click',()=>{
   clearPresets();btn.classList.add('active');const p=presets[btn.dataset.preset];
   document.getElementById('startDate').value=p[0];document.getElementById('endDate').value=p[1];render()})});
 
 // Init
-document.querySelector('[data-preset="all"]').classList.add('active');
+// no default preset active
 render();
 </script>
 </body>

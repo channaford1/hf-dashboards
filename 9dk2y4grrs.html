@@ -305,16 +305,15 @@ document.getElementById('startDate').addEventListener('change',()=>{clearP();ren
 document.getElementById('endDate').addEventListener('change',()=>{clearP();render()});
 function clearP(){document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'))}
 const presets={
-    'confirmed':[new Date(Date.now()-135*864e5).toISOString().slice(0,10), new Date(Date.now()-45*864e5).toISOString().slice(0,10)],
+    'confirmed':[new Date(Date.now()-135*864e5).toISOString().slice(0,10),new Date(Date.now()-45*864e5).toISOString().slice(0,10)],
     'lastweek':[(()=>{const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7-7);return d.toISOString().slice(0,10)})(),(()=>{const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7-1);return d.toISOString().slice(0,10)})()],
     'lastmonth':[(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth()-1,1).toISOString().slice(0,10)})(),(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),0).toISOString().slice(0,10)})()],
-    'all':['2026-03-28','2026-08-23']
-  };
+    'all':['2026-03-28','2026-08-23']};
 document.querySelectorAll('.preset-btn').forEach(btn=>{btn.addEventListener('click',()=>{
   clearP();btn.classList.add('active');const p=presets[btn.dataset.preset];
   document.getElementById('startDate').value=p[0];document.getElementById('endDate').value=p[1];render()})});
 
-document.querySelector('[data-preset="all"]').classList.add('active');
+// no default preset active
 render();
 </script>
 </body>
